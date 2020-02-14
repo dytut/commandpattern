@@ -2,7 +2,8 @@ package demo
 
 //Command interface
 interface Command {
-    fun execute()
+    fun execute() //Det här är det viktiga
+    fun replay()
 }
 
 /**
@@ -45,28 +46,57 @@ class RobotRiddare(val namn: String) {
  */
 
 //Concrete command
-class TaFramSvardet( private val robotRiddare: RobotRiddare ): Command {
+class TaFramSvardet( private val robotRiddare: RobotRiddare,
+                     var recorder: CommandRecorder? = null): Command {
+
     override fun execute() {
         robotRiddare.`ta fram svärdet`()
+        recorder?.commands?.add(this)
+    }
+
+    override fun replay() {
+        recorder = null
+        execute()
     }
 }
 //concrete command
-class HuggMedSvardet( private val robotRiddare: RobotRiddare ): Command {
+class HuggMedSvardet( private val robotRiddare: RobotRiddare,
+                      var recorder: CommandRecorder? = null ): Command {
     override fun execute() {
         robotRiddare.`slå med svärdet`()
+        recorder?.commands?.add(this)
+    }
+
+    override fun replay() {
+        recorder = null
+        execute()
     }
 }
 //concrete command
-class LaggUndanSvardet( private val robotRiddare: RobotRiddare): Command {
+class LaggUndanSvardet( private val robotRiddare: RobotRiddare,
+                        var recorder: CommandRecorder? = null): Command {
     override fun execute() {
         robotRiddare.`stoppa svärdet i skidan`()
+        recorder?.commands?.add(this)
+    }
+
+    override fun replay() {
+        recorder = null
+        execute()
     }
 }
 //concrete command
-class `Ta hand om hästarna`(private val robotRiddare: RobotRiddare): Command {
+class `Ta hand om hästarna`(private val robotRiddare: RobotRiddare,
+                            var recorder: CommandRecorder? = null): Command {
     override fun execute() {
         robotRiddare.`ta hand om hästen`()
         robotRiddare.`ta hand om lacken`()
+        recorder?.commands?.add(this)
+    }
+
+    override fun replay() {
+        recorder = null
+        execute()
     }
 }
 
@@ -91,10 +121,19 @@ class Multifunktionsknapp( var commands: List<Command> ) {
 }
 
 
+/**
+ * Bonusprylar
+ */
+
+class CommandRecorder {
+    val commands = mutableListOf<Command>()
+}
+
 fun main() {
 
     val bertil = RobotRiddare("Bertil")
 
+    //Ett gäng knappar
     val knappHugg = Knapp( HuggMedSvardet(bertil) )
     val knappTaFramSvardet = Knapp( TaFramSvardet(bertil) )
     val knappLaggUndanSvardet = Knapp( LaggUndanSvardet(bertil) )
@@ -104,6 +143,10 @@ fun main() {
     knappTaFramSvardet.klick()
     knappHugg.klick()
     knappLaggUndanSvardet.klick()
+
+
+
+
 
 /*
     println("###################")
@@ -115,6 +158,24 @@ fun main() {
     //Klicka på multiknappen
     Multifunktionsknapp(attackSekvens).klick()
 */
+
+
+/*    //Spela in
+    val recorder = CommandRecorder()
+    val knappHugg = Knapp( HuggMedSvardet(bertil, recorder) )
+    val knappTaFramSvardet = Knapp( TaFramSvardet(bertil, recorder) )
+    val knappLaggUndanSvardet = Knapp( LaggUndanSvardet(bertil, recorder) )
+
+    knappHugg.klick()
+    knappTaFramSvardet.klick()
+    knappHugg.klick()
+    knappHugg.klick()
+    knappHugg.klick()
+    knappLaggUndanSvardet.klick()
+
+    println("===Och Spela upp igen===")
+
+    recorder.commands.forEach { it.replay() }*/
 
 
 
